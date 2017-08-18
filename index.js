@@ -21,7 +21,7 @@ app.use(session({
 //array of strings
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
 let guesses = [];
-let guessCounter = 8;
+let winState;
 
 //custom middleware
 app.use((req, res, next) =>{
@@ -30,9 +30,13 @@ app.use((req, res, next) =>{
     return next();
   }
   let randomWord = words[Math.floor(Math.random() * words.length)];
+  //array of the letters of the random word
   req.session.randomWordArray = randomWord.split('');
+  //each session's unique word
   req.session.uniqueWord = randomWord;
+  //each session's guesses
   req.session.guesses = [];
+  req.session.guessCounter = 8;
   //creates an array with length equal to the word's length, then fills it with underscores
   req.session.letterSpace = new Array(req.session.uniqueWord.length).fill('_');
   next();
@@ -50,7 +54,7 @@ app.get('/', (req, res) => {
     //array of guesses joined with spaces
     guesses: req.session.guesses.join(' '),
     //number of guesses left
-    guessCounter: guessCounter});
+    guessCounter: req.session.guessCounter});
 });
 
 app.post('/check', (req, res) =>{
@@ -58,6 +62,11 @@ app.post('/check', (req, res) =>{
   if (!req.session.guesses.includes(req.body.guess)) {
     req.session.guesses.push(req.body.guess);
   }
+  //if the word doesn't include the letter guessed, remove a turn
+  if (!req.session.randomWordArray.includes(req.body.guess)) {
+    req.session.guessCounter = req.session.guessCounter - 1;
+  }
+
   //for each underscore
   req.session.letterSpace.forEach((item, index) =>{
     //if array of guessed letters includes letter from array of random word
@@ -66,6 +75,10 @@ app.post('/check', (req, res) =>{
         req.session.letterSpace[index] = req.session.randomWordArray[index];
       }
   });
+
+  if (true) {
+
+  }
   res.redirect('/');
 });
 
