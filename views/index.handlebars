@@ -2,13 +2,19 @@
 <hr>
 <h1>{{randomWord}}</h1>
 
+{{#each errors}}
+ERROR: {{msg}}
+{{/each}}
 <form action="/check" method="post">
   <input type="text" name="guess" value="" maxlength="1" size="1">
   <input type="submit" name="" value="">
 </form>
 
-
-<p>{{letterSpace}}</p>
+{{#if winState}}
+<h1>{{winState}}</h1>
+{{else}}
+<h1>{{letterSpace}}</h1>
+{{/if}}
 
 <hr>
 <br>

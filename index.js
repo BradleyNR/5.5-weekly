@@ -2,6 +2,7 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
 const bodyparser = require('body-parser');
+const expressValidator = require('express-validator');
 const fs = require('fs');
 
 const app = express();
@@ -12,6 +13,7 @@ app.set('view engine', 'handlebars');
 
 //middleware
 app.use(bodyparser.urlencoded({extended: false}));
+app.use(expressValidator());
 app.use(session({
   secret: 'hiddenbobiddenzopiddenmomiddenloliddensosidden',
   resave: false,
@@ -20,8 +22,6 @@ app.use(session({
 
 //array of strings
 const words = fs.readFileSync("/usr/share/dict/words", "utf-8").toLowerCase().split("\n");
-let guesses = [];
-let winState;
 
 //custom middleware
 app.use((req, res, next) =>{
@@ -54,7 +54,9 @@ app.get('/', (req, res) => {
     //array of guesses joined with spaces
     guesses: req.session.guesses.join(' '),
     //number of guesses left
-    guessCounter: req.session.guessCounter});
+    guessCounter: req.session.guessCounter,
+    //win or lose
+    winState: req.session.winState});
 });
 
 app.post('/check', (req, res) =>{
@@ -62,10 +64,21 @@ app.post('/check', (req, res) =>{
   if (!req.session.guesses.includes(req.body.guess)) {
     req.session.guesses.push(req.body.guess);
   }
-  //if the word doesn't include the letter guessed, remove a turn
-  if (!req.session.randomWordArray.includes(req.body.guess)) {
+  //if the word doesn't include the letter guessed, remove a turn (if turns are > 0)
+  if (!req.session.randomWordArray.includes(req.body.guess) && req.session.guessCounter != 0) {
     req.session.guessCounter = req.session.guessCounter - 1;
   }
+
+  //win and loss message
+  if (req.session.guessCounter == 0) {
+    req.session.winState = 'You Lose!';
+  } else if (req.session.letterSpace.join('') == req.session.uniqueWord && req.session.guessCounter > 0) {
+    req.session.winState = 'You Win!';
+  }
+
+  //error logic
+  req.checkBody('guess', 'Guess cannot be empty!').notEmpty();
+  let errors = req.validationErrors();
 
   //for each underscore
   req.session.letterSpace.forEach((item, index) =>{
@@ -76,10 +89,27 @@ app.post('/check', (req, res) =>{
       }
   });
 
-  if (true) {
+  //if there are errors, render the home page again with those errors, else redirect to home page
+  if (errors) {
+    res.render('index', {
+      //word
+      randomWord: req.session.uniqueWord,
+      //array of _ representing letters joined with spaces
+      letterSpace: req.session.letterSpace.join(' '),
+      //array of guesses joined with spaces
+      guesses: req.session.guesses.join(' '),
+      //number of guesses left
+      guessCounter: req.session.guessCounter,
+      //win or lose
+      winState: req.session.winState,
+      //errors
+      errors: errors
+    });
 
+    console.log(errors);
+  } else {
+    res.redirect('/');
   }
-  res.redirect('/');
 });
 
 
