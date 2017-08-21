@@ -45,7 +45,7 @@ app.use((req, res, next) =>{
 
 app.get('/', (req, res) => {
   //pull random word
-  console.log(req.session.uniqueWord);
+  console.log('The Word is: ' + req.session.uniqueWord);
   res.render('index', {
     //word
     randomWord: req.session.uniqueWord,
@@ -77,7 +77,9 @@ app.post('/check', (req, res) =>{
   }
 
   //error logic
+  req.checkBody("guess", "Only one character may be entered.").isLength(1, 1);
   req.checkBody('guess', 'Guess cannot be empty!').notEmpty();
+  req.checkBody("guess", "Only letters may be entered.").isAlpha();
   let errors = req.validationErrors();
 
   //for each underscore
@@ -91,6 +93,8 @@ app.post('/check', (req, res) =>{
 
   //if there are errors, render the home page again with those errors, else redirect to home page
   if (errors) {
+    //temporary jank to make sure turns don't go down when errors are thrown
+    req.session.guessCounter = req.session.guessCounter + 1;
     res.render('index', {
       //word
       randomWord: req.session.uniqueWord,
@@ -105,8 +109,6 @@ app.post('/check', (req, res) =>{
       //errors
       errors: errors
     });
-
-    console.log(errors);
   } else {
     res.redirect('/');
   }

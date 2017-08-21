@@ -1,12 +1,12 @@
 <h1>Word Game</h1>
 <hr>
-<h1>{{randomWord}}</h1>
+<!-- <h1>{{randomWord}}</h1> -->
 
 {{#each errors}}
-ERROR: {{msg}}
+ERROR: {{msg}}<br>
 {{/each}}
 <form action="/check" method="post">
-  <input type="text" name="guess" value="" maxlength="1" size="1">
+  <input type="text" name="guess" value="">
   <input type="submit" name="" value="">
 </form>
 
