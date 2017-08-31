@@ -1,14 +1,31 @@
-<h1>Word Game</h1>
-<hr>
-<!-- <h1>{{randomWord}}</h1> -->
+<div class="row">
+  <h1 class="three columns">Word Game</h1>
+</div>
 
-{{#each errors}}
-ERROR: {{msg}}<br>
-{{/each}}
+<div class="row">
+  <form class="three columns" action="/newgame" method="post">
+    <input class="twelve columns" type="submit" value="New Game">
+  </form>
+</div>
+
+<hr>
+
+
+
 <form action="/check" method="post">
-  <input type="text" name="guess" value="">
-  <input type="submit" name="" value="">
+  <div class="row">
+  <input class="six columns"type="text" name="guess" value="" placeholder="Please guess one letter at a time!">
+  <input class="button button-primary two columns" type="submit" name="" value="Guess">
+  </div>
 </form>
+
+<ul>
+  {{#each errors}}
+  <div class="row">
+  <h6 class="four columns">ERROR: {{msg}}</h6>
+  </div>
+  {{/each}}
+</ul>
 
 {{#if winState}}
 <h1>{{winState}}</h1>
@@ -16,7 +33,7 @@ ERROR: {{msg}}<br>
 <h1>{{letterSpace}}</h1>
 {{/if}}
 
+
 <hr>
-<br>
 <h3>Turns Left: {{guessCounter}}</h3>
-<p>{{guesses}}</p>
+<h5>Letters Guessed: {{guesses}}</h5>

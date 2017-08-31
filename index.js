@@ -61,13 +61,22 @@ app.get('/', (req, res) => {
 
 app.post('/check', (req, res) =>{
   //if the array of guesses does not include the guess, add it
-  if (!req.session.guesses.includes(req.body.guess)) {
+  if (!req.session.guesses.includes(req.body.guess) && req.body.guess.length == 1) {
     req.session.guesses.push(req.body.guess);
   }
   //if the word doesn't include the letter guessed, remove a turn (if turns are > 0)
   if (!req.session.randomWordArray.includes(req.body.guess) && req.session.guessCounter != 0) {
     req.session.guessCounter = req.session.guessCounter - 1;
   }
+
+  //for each underscore
+  req.session.letterSpace.forEach((item, index) =>{
+    //if array of guessed letters includes letter from array of random word
+      if (req.session.guesses.includes(req.session.randomWordArray[index])) {
+        //set the _ equal to that letter
+        req.session.letterSpace[index] = req.session.randomWordArray[index];
+      }
+  });
 
   //win and loss message
   if (req.session.guessCounter == 0) {
@@ -82,18 +91,10 @@ app.post('/check', (req, res) =>{
   req.checkBody("guess", "Only letters may be entered.").isAlpha();
   let errors = req.validationErrors();
 
-  //for each underscore
-  req.session.letterSpace.forEach((item, index) =>{
-    //if array of guessed letters includes letter from array of random word
-      if (req.session.guesses.includes(req.session.randomWordArray[index])) {
-        //set the _ equal to that letter
-        req.session.letterSpace[index] = req.session.randomWordArray[index];
-      }
-  });
 
   //if there are errors, render the home page again with those errors, else redirect to home page
   if (errors) {
-    //temporary jank to make sure turns don't go down when errors are thrown
+    //make sure turns don't go down when errors are thrown
     req.session.guessCounter = req.session.guessCounter + 1;
     res.render('index', {
       //word
@@ -112,6 +113,11 @@ app.post('/check', (req, res) =>{
   } else {
     res.redirect('/');
   }
+});
+
+app.post('/newgame', (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
 });
 
 
